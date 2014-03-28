@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+from scipy import *
 from array import array
 from filecmp import demo
 
@@ -312,6 +313,7 @@ plt.title('FFT du signal transmit pour utilisateur B')
 
 #%%%%%%%%%%%%%%% Le signal de utilisateur A est ajout? au signal du utilisateur B  %%%%%%%%%%%
 
+"""on suppose qu'il n ya pas de bruit guaussien blanc ajoute"""
 
 #CODE STARTS HERE
 
@@ -337,13 +339,11 @@ rx1=composite_signal*pnupsampled1
 #CODE ENDS HERE
 
 """plt.figure(11)
-plt.plot(rx1)
-"""
+plt.plot(rx1)"""
+
 # BPSK DEMODULATION pour utilisateur A
 demodcar1=np.array([],float)
-
- 		
- 		
+	
  		
 #CODE STARTS HERE
 for i in range(len(rx1)):
@@ -368,7 +368,7 @@ plt.plot(bpskdemod1)
 plt.title('sourtie de bpsk demod pur utilisateur A ')
 
 len_dmod1=len(bpskdemod1)
-SUM=np.zeros((1,len_dmod1/100), dtype=float)
+SUM=np.zeros((1,len_dmod1/100), dtype=int)
 
 #CODE STARTS HERE
 """on parcourt tous les elements du tableau bpskdemod1 et on effectue la somme sur tous les 100 elements , 
@@ -377,6 +377,7 @@ SUM=np.zeros((1,len_dmod1/100), dtype=float)
 
 n=0
 s=0
+tmp=[]    #un tableau temporaire contennant le decodage
 for i in range(6):
 	s=0
 	n+=100
@@ -384,11 +385,11 @@ for i in range(6):
 		s+=bpskdemod1[j]
 		j+=1
 	if(s>0):
-		SUM=np.append(SUM,1)
+		tmp.append(1)
 	else:
-		SUM=np.append(SUM,0)
-		
-print(SUM)
+		tmp.append(0)
+
+SUM=tmp   #copier les bytes de decodage dans le tableau numy 'SUM' et l'afficher		
 
 
 #CODE ENDS HERE
@@ -396,10 +397,11 @@ print(SUM)
 rxbits1=np.array([],float)
 #CODE STARTS HERE
 
-
+rxbits1=SUM
 #CODE ENDS HERE
 
-#print 'Decoded user A information:' , rxbits1
+#
+print 'Decoded user A information:' , rxbits1
 
 
 # Demodulation Pour Utilisateur B
@@ -450,6 +452,7 @@ SUM=np.zeros((1,len_dmod2/100), dtype=float)
 n=0
 s=0
 j=0
+tmp=[]    #un tableau temporaire contennant le decodage
 for i in range(6):
 	s=0
 	n+=100
@@ -457,21 +460,54 @@ for i in range(6):
 		s+=bpskdemod2[j]
 		j+=1
 	if(s>0):
-		SUM[i]=np.e(SUM,1)
+		tmp.append(1)
 	else:
-		SUM=np.append(SUM,0)
+		tmp.append(0)
 		
-print(SUM)
+SUM=tmp   #copier les bytes de decodage dans le tableau numy 'SUM' et l'afficher		
+
 #CODE ENDS HERE
 
 rxbits2=np.array([],float)
 #CODE STARTS HERE
 
-
+rxbits2=SUM
 
 #CODE ENDS HERE
 
 print 'Decoded user B information:' , rxbits2
 
 
+Eb_No_dB  = arange(-2,10)
+Eb_No_lin = 10**(Eb_No_dB/10.0)
+print("Eb_No_lin :",Eb_No_lin )
+Pe  = np.arange(0,6,dtype=float)
+BER = arange(-2,10)
+s=np.arange(-1,6,dtype=float)
+for snr in Eb_No_lin:
+	No=1.0/snr
+	# noise
+	scale = sqrt(No/2)
+	n = scale
+	
+	# received signal + noise
+   	x = s + n
+
+   # detection (information is encoded in signal phase)
+   	y = sign(x)
+   # error counting
+   
+
+# end of frame loop
+###
+print("s :", s)
+
+# plt.semilogy(Eb_No_dB, Pe,'r',linewidth=2)
+plt.semilogy(Eb_No_dB, BER,'-s')
+plt.grid(True)
+plt.legend(('analytical','simulation'))
+plt.xlabel('Eb/No (dB)')
+plt.ylabel('BER')
 plt.show()
+
+#plt.show()
